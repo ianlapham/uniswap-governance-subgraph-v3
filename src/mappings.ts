@@ -63,6 +63,7 @@ export function handleProposalCreated(event: ProposalCreated): void {
     proposal.values = event.params.values;
     proposal.signatures = event.params.signatures;
     proposal.calldatas = event.params.calldatas;
+    proposal.creationBlock = event.block.number;
     proposal.startBlock = event.params.startBlock;
     proposal.endBlock = event.params.endBlock;
     proposal.description = event.params.description;
@@ -102,6 +103,7 @@ export function handleProposalCreatedNewGovernor(event: ProposalCreated): void {
   proposal.values = event.params.values;
   proposal.signatures = event.params.signatures;
   proposal.calldatas = event.params.calldatas;
+  proposal.creationBlock = event.block.number;
   proposal.startBlock = event.params.startBlock;
   proposal.endBlock = event.params.endBlock;
   proposal.description = event.params.description;
@@ -118,6 +120,8 @@ export function handleProposalCanceled(event: ProposalCanceled): void {
   let proposal = getOrCreateProposal("0." + event.params.id.toString());
 
   proposal.status = STATUS_CANCELLED;
+  proposal.cancelationBlock = event.block.number;
+
   proposal.save();
 }
 
@@ -130,6 +134,8 @@ export function handleProposalCanceledNewGovernor(
   let proposal = getOrCreateProposal("1." + event.params.id.toString());
 
   proposal.status = STATUS_CANCELLED;
+  proposal.cancelationBlock = event.block.number;
+
   proposal.save();
 }
 
@@ -172,6 +178,8 @@ export function handleProposalExecuted(event: ProposalExecuted): void {
 
   proposal.status = STATUS_EXECUTED;
   proposal.executionETA = null;
+  proposal.executionBlock = event.block.number;
+
   proposal.save();
 
   governance.proposalsQueued = governance.proposalsQueued - BIGINT_ONE;
@@ -189,6 +197,8 @@ export function handleProposalExecutedNewGovernor(
 
   proposal.status = STATUS_EXECUTED;
   proposal.executionETA = null;
+  proposal.executionBlock = event.block.number;
+
   proposal.save();
 
   governance.proposalsQueued = governance.proposalsQueued - BIGINT_ONE;
