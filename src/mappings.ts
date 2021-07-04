@@ -80,7 +80,7 @@ export function handleProposalCanceled(event: ProposalCanceled): void {
   let proposal = getOrCreateProposal(proposalId);
 
   proposal.status = STATUS_CANCELLED;
-  proposal.cancelationBlock = event.block.number;
+  proposal.cancellationBlock = event.block.number;
 
   proposal.save();
 }

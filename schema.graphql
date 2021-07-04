@@ -80,7 +80,7 @@ type Proposal @entity {
   executionBlock: BigInt
 
   "Block number proposal was canceled in"
-  cancelationBlock: BigInt
+  cancellationBlock: BigInt
 
   "String description of the change"
   description: String!
