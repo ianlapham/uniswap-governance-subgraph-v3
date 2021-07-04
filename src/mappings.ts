@@ -35,52 +35,10 @@ import { toDecimal } from "./utils/decimals";
 //   handler: handleProposalCreated
 
 export function handleProposalCreated(event: ProposalCreated): void {
-  if (event.block.number > BigInt.fromI32(12686655)) {
-    log.error("Old governance used after transition. tx_hash: {}", [
-      event.transaction.hash.toHexString()
-    ]);
-  } else {
-    let proposal = getOrCreateProposal("0." + event.params.id.toString());
-    let proposer = getOrCreateDelegate(
-      event.params.proposer.toHexString(),
-      false
-    );
+  let proposalId = getProposalId(event.block.number, event.address, event.params.id.toString(), event.transaction.hash.toHexString());
+  if(proposalId == null) return;
+  let proposal = getOrCreateProposal(proposalId);
 
-    // checking if the proposer was a delegate already accounted for, if not we should log an error
-    // since it shouldn't be possible for a delegate to propose anything without first being "created"
-    if (proposer == null) {
-      log.error("Delegate {} not found on ProposalCreated. tx_hash: {}", [
-        event.params.proposer.toHexString(),
-        event.transaction.hash.toHexString()
-      ]);
-    }
-
-    // Creating it anyway since we will want to account for this event data, even though it should've never happened
-    proposer = getOrCreateDelegate(event.params.proposer.toHexString());
-
-    proposal.proposer = proposer.id;
-    proposal.targets = event.params.targets as Bytes[];
-    proposal.values = event.params.values;
-    proposal.signatures = event.params.signatures;
-    proposal.calldatas = event.params.calldatas;
-    proposal.creationBlock = event.block.number;
-    proposal.startBlock = event.params.startBlock;
-    proposal.endBlock = event.params.endBlock;
-    proposal.description = event.params.description;
-    proposal.status =
-      event.block.number >= proposal.startBlock
-        ? STATUS_ACTIVE
-        : STATUS_PENDING;
-
-    proposal.save();
-  }
-}
-
-// - event: ProposalCreated(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,string)
-//   handler: handleProposalCreatedNewGovernor
-
-export function handleProposalCreatedNewGovernor(event: ProposalCreated): void {
-  let proposal = getOrCreateProposal("1." + event.params.id.toString());
   let proposer = getOrCreateDelegate(
     event.params.proposer.toHexString(),
     false
@@ -117,21 +75,9 @@ export function handleProposalCreatedNewGovernor(event: ProposalCreated): void {
 //   handler: handleProposalCanceled
 
 export function handleProposalCanceled(event: ProposalCanceled): void {
-  let proposal = getOrCreateProposal("0." + event.params.id.toString());
-
-  proposal.status = STATUS_CANCELLED;
-  proposal.cancelationBlock = event.block.number;
-
-  proposal.save();
-}
-
-// - event: ProposalCanceled(uint256)
-//   handler: handleProposalCanceledNewGovernor
-
-export function handleProposalCanceledNewGovernor(
-  event: ProposalCanceled
-): void {
-  let proposal = getOrCreateProposal("1." + event.params.id.toString());
+  let proposalId = getProposalId(event.block.number, event.address, event.params.id.toString(), event.transaction.hash.toHexString());
+  if(proposalId == null) return;
+  let proposal = getOrCreateProposal(proposalId);
 
   proposal.status = STATUS_CANCELLED;
   proposal.cancelationBlock = event.block.number;
@@ -144,22 +90,10 @@ export function handleProposalCanceledNewGovernor(
 
 export function handleProposalQueued(event: ProposalQueued): void {
   let governance = getGovernanceEntity();
-  let proposal = getOrCreateProposal("0." + event.params.id.toString());
 
-  proposal.status = STATUS_QUEUED;
-  proposal.executionETA = event.params.eta;
-  proposal.save();
-
-  governance.proposalsQueued = governance.proposalsQueued + BIGINT_ONE;
-  governance.save();
-}
-
-// - event: ProposalQueued(uint256,uint256)
-//   handler: handleProposalQueuedNewGovernor
-
-export function handleProposalQueuedNewGovernor(event: ProposalQueued): void {
-  let governance = getGovernanceEntity();
-  let proposal = getOrCreateProposal("1." + event.params.id.toString());
+  let proposalId = getProposalId(event.block.number, event.address, event.params.id.toString(), event.transaction.hash.toHexString());
+  if(proposalId == null) return;
+  let proposal = getOrCreateProposal(proposalId);
 
   proposal.status = STATUS_QUEUED;
   proposal.executionETA = event.params.eta;
@@ -174,26 +108,10 @@ export function handleProposalQueuedNewGovernor(event: ProposalQueued): void {
 
 export function handleProposalExecuted(event: ProposalExecuted): void {
   let governance = getGovernanceEntity();
-  let proposal = getOrCreateProposal("0." + event.params.id.toString());
 
-  proposal.status = STATUS_EXECUTED;
-  proposal.executionETA = null;
-  proposal.executionBlock = event.block.number;
-
-  proposal.save();
-
-  governance.proposalsQueued = governance.proposalsQueued - BIGINT_ONE;
-  governance.save();
-}
-
-// - event: ProposalExecuted(uint256)
-//   handler: handleProposalExecutedNewGovernor
-
-export function handleProposalExecutedNewGovernor(
-  event: ProposalExecuted
-): void {
-  let governance = getGovernanceEntity();
-  let proposal = getOrCreateProposal("1." + event.params.id.toString());
+  let proposalId = getProposalId(event.block.number, event.address, event.params.id.toString(), event.transaction.hash.toHexString());
+  if(proposalId == null) return;
+  let proposal = getOrCreateProposal(proposalId);
 
   proposal.status = STATUS_EXECUTED;
   proposal.executionETA = null;
@@ -209,57 +127,14 @@ export function handleProposalExecutedNewGovernor(
 //   handler: handleVoteCast
 
 export function handleVoteCast(event: VoteCast): void {
-  if (event.block.number > BigInt.fromI32(12686655)) {
-    log.error("Old governance used after transition. tx_hash: {}", [
-      event.transaction.hash.toHexString()
-    ]);
-  }
-  else {
-  let proposal = getOrCreateProposal("0." + event.params.proposalId.toString());
+  let proposalId = getProposalId(event.block.number, event.address, event.params.proposalId.toString(), event.transaction.hash.toHexString());
+  if(proposalId == null) return;
+  let proposal = getOrCreateProposal(proposalId);
+
   let voteId = event.params.voter
     .toHexString()
     .concat("-")
-    .concat(event.params.proposalId.toString());
-  let vote = getOrCreateVote(voteId);
-  let voter = getOrCreateDelegate(event.params.voter.toHexString(), false);
-
-  // checking if the voter was a delegate already accounted for, if not we should log an error
-  // since it shouldn't be possible for a delegate to vote without first being "created"
-  if (voter == null) {
-    log.error("Delegate {} not found on VoteCast. tx_hash: {}", [
-      event.params.voter.toHexString(),
-      event.transaction.hash.toHexString()
-    ]);
-  }
-
-  // Creating it anyway since we will want to account for this event data, even though it should've never happened
-  voter = getOrCreateDelegate(event.params.voter.toHexString());
-
-  vote.proposal = proposal.id;
-  vote.voter = voter.id;
-  vote.votesRaw = event.params.votes;
-  vote.votes = toDecimal(event.params.votes);
-  vote.support = event.params.support;
-
-  vote.save();
-
-  if (proposal.status == STATUS_PENDING) {
-    proposal.status = STATUS_ACTIVE;
-    proposal.save();
-  }
-}
-}
-
-// - event: VoteCast(address,uint256,bool,uint256)
-//   handler: handleVoteCastNewGovernor
-
-export function handleVoteCastNewGovernor(event: VoteCast): void {
-  let newId = "1." + event.params.proposalId.toString();
-  let proposal = getOrCreateProposal(newId);
-  let voteId = event.params.voter
-    .toHexString()
-    .concat("-")
-    .concat(newId);
+    .concat(proposalId);
   let vote = getOrCreateVote(voteId);
   let voter = getOrCreateDelegate(event.params.voter.toHexString(), false);
 
@@ -404,4 +279,28 @@ export function handleTransfer(event: Transfer): void {
   }
 
   toHolder.save();
+}
+
+function getProposalId(
+  block: BigInt,
+  contract: Address | null,
+  baseId: String,
+  txHash: String
+): String {
+  switch (contract.toU32()) {
+    case Address.fromString("0x5e4be8Bc9637f0EAA1A755019e06A68ce081D58F").toU32():
+      if (block > BigInt.fromI32(12686655)) {
+        log.error("Old governance used after transition. tx_hash: {}", [
+          txHash
+        ]);
+        return null;
+      } else {
+        return "0." + baseId;
+      }
+    case Address.fromString("0xC4e172459f1E7939D522503B81AFAaC1014CE6F6").toU32():
+      return "1." + baseId;
+    default:
+      log.error("Fatal error, get proposal id fault. Tx hash: {}", [txHash]);
+      return null;
+  }
 }

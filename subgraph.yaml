@@ -59,15 +59,15 @@ dataSources:
           file: ./abis/GovernorAlpha.json
       eventHandlers:
         - event: ProposalCreated(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,string)
-          handler: handleProposalCreatedNewGovernor
+          handler: handleProposalCreated
         - event: ProposalCanceled(uint256)
-          handler: handleProposalCanceledNewGovernor
+          handler: handleProposalCanceled
         - event: ProposalQueued(uint256,uint256)
-          handler: handleProposalQueuedNewGovernor
+          handler: handleProposalQueued
         - event: ProposalExecuted(uint256)
-          handler: handleProposalExecutedNewGovernor
+          handler: handleProposalExecuted
         - event: VoteCast(address,uint256,bool,uint256)
-          handler: handleVoteCastNewGovernor
+          handler: handleVoteCast
   - kind: ethereum/contract
     name: CompoundToken
     network: mainnet
