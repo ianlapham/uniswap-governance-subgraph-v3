@@ -35,8 +35,13 @@ import { toDecimal } from "./utils/decimals";
 //   handler: handleProposalCreated
 
 export function handleProposalCreated(event: ProposalCreated): void {
-  let proposalId = getProposalId(event.block.number, event.address, event.params.id.toString(), event.transaction.hash.toHexString());
-  if(proposalId == null) return;
+  let proposalId = getProposalId(
+    event.block.number,
+    event.address,
+    event.params.id.toString(),
+    event.transaction.hash.toHexString()
+  );
+  if (proposalId == null) return;
   let proposal = getOrCreateProposal(proposalId);
 
   let proposer = getOrCreateDelegate(
@@ -75,8 +80,13 @@ export function handleProposalCreated(event: ProposalCreated): void {
 //   handler: handleProposalCanceled
 
 export function handleProposalCanceled(event: ProposalCanceled): void {
-  let proposalId = getProposalId(event.block.number, event.address, event.params.id.toString(), event.transaction.hash.toHexString());
-  if(proposalId == null) return;
+  let proposalId = getProposalId(
+    event.block.number,
+    event.address,
+    event.params.id.toString(),
+    event.transaction.hash.toHexString()
+  );
+  if (proposalId == null) return;
   let proposal = getOrCreateProposal(proposalId);
 
   proposal.status = STATUS_CANCELLED;
@@ -91,8 +101,13 @@ export function handleProposalCanceled(event: ProposalCanceled): void {
 export function handleProposalQueued(event: ProposalQueued): void {
   let governance = getGovernanceEntity();
 
-  let proposalId = getProposalId(event.block.number, event.address, event.params.id.toString(), event.transaction.hash.toHexString());
-  if(proposalId == null) return;
+  let proposalId = getProposalId(
+    event.block.number,
+    event.address,
+    event.params.id.toString(),
+    event.transaction.hash.toHexString()
+  );
+  if (proposalId == null) return;
   let proposal = getOrCreateProposal(proposalId);
 
   proposal.status = STATUS_QUEUED;
@@ -109,8 +124,13 @@ export function handleProposalQueued(event: ProposalQueued): void {
 export function handleProposalExecuted(event: ProposalExecuted): void {
   let governance = getGovernanceEntity();
 
-  let proposalId = getProposalId(event.block.number, event.address, event.params.id.toString(), event.transaction.hash.toHexString());
-  if(proposalId == null) return;
+  let proposalId = getProposalId(
+    event.block.number,
+    event.address,
+    event.params.id.toString(),
+    event.transaction.hash.toHexString()
+  );
+  if (proposalId == null) return;
   let proposal = getOrCreateProposal(proposalId);
 
   proposal.status = STATUS_EXECUTED;
@@ -127,8 +147,13 @@ export function handleProposalExecuted(event: ProposalExecuted): void {
 //   handler: handleVoteCast
 
 export function handleVoteCast(event: VoteCast): void {
-  let proposalId = getProposalId(event.block.number, event.address, event.params.proposalId.toString(), event.transaction.hash.toHexString());
-  if(proposalId == null) return;
+  let proposalId = getProposalId(
+    event.block.number,
+    event.address,
+    event.params.proposalId.toString(),
+    event.transaction.hash.toHexString()
+  );
+  if (proposalId == null) return;
   let proposal = getOrCreateProposal(proposalId);
 
   let voteId = event.params.voter
@@ -287,20 +312,21 @@ function getProposalId(
   baseId: String,
   txHash: String
 ): String {
-  switch (contract.toU32()) {
-    case Address.fromString("0x5e4be8Bc9637f0EAA1A755019e06A68ce081D58F").toU32():
-      if (block > BigInt.fromI32(12686655)) {
-        log.error("Old governance used after transition. tx_hash: {}", [
-          txHash
-        ]);
-        return null;
-      } else {
-        return "0." + baseId;
-      }
-    case Address.fromString("0xC4e172459f1E7939D522503B81AFAaC1014CE6F6").toU32():
-      return "1." + baseId;
-    default:
-      log.error("Fatal error, get proposal id fault. Tx hash: {}", [txHash]);
+  if (
+    contract == Address.fromString("0x5e4be8Bc9637f0EAA1A755019e06A68ce081D58F")
+  ) {
+    if (block > BigInt.fromI32(12686655)) {
+      log.error("Old governance used after transition. tx_hash: {}", [txHash]);
       return null;
+    } else {
+      return "0." + baseId;
+    }
+  } else if (
+    contract == Address.fromString("0xC4e172459f1E7939D522503B81AFAaC1014CE6F6")
+  ) {
+    return "1." + baseId;
+  } else {
+    log.error("Fatal error, get proposal id fault. Tx hash: {}", [txHash]);
+    return null;
   }
 }
