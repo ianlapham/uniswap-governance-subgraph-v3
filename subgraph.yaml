@@ -1,6 +1,9 @@
 specVersion: 0.0.2
 description: Compound governance subgraph
 repository: https://github.com/arr00/uniswap-governance-subgraph-v2
+graft:
+  base: QmYoLA2JNaVfhDxrAoNcvUXPJ3xg33GoMJ9tWGgtwB7QBC
+  block: 13059150
 schema:
   file: ./schema.graphql
 dataSources:
@@ -13,7 +16,7 @@ dataSources:
       startBlock: 10861678
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.4
       language: wasm/assemblyscript
       file: ./src/mappings.ts
       entities:
@@ -45,7 +48,7 @@ dataSources:
       startBlock: 12543659
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.4
       language: wasm/assemblyscript
       file: ./src/mappings.ts
       entities:
@@ -67,25 +70,57 @@ dataSources:
         - event: ProposalExecuted(uint256)
           handler: handleProposalExecuted
         - event: VoteCast(address,uint256,bool,uint256)
+          handler: handleVoteCastAlpha
+  - kind: ethereum/contract
+    name: GovernorBravo
+    network: mainnet
+    source:
+      address: "0x408ED6354d4973f66138C91495F2f2FCbd8724C3"
+      abi: GovernorBravo
+      startBlock: 13059157
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      file: ./src/mappings.ts
+      entities:
+        - Delegate
+        - TokenHolder
+        - Proposal
+        - Vote
+        - Governance
+      abis:
+        - name: GovernorBravo
+          file: ./abis/GovernorBravo.json
+      eventHandlers:
+        - event: ProposalCreated(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,string)
+          handler: handleProposalCreated
+        - event: ProposalCanceled(uint256)
+          handler: handleProposalCanceled
+        - event: ProposalQueued(uint256,uint256)
+          handler: handleProposalQueued
+        - event: ProposalExecuted(uint256)
+          handler: handleProposalExecuted
+        - event: VoteCast(indexed address,uint256,uint8,uint256,string)
           handler: handleVoteCast
   - kind: ethereum/contract
-    name: CompoundToken
+    name: UniswapToken
     network: mainnet
     source:
       address: "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"
-      abi: CompoundToken
+      abi: UniswapToken
       startBlock: 10861674
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.3
+      apiVersion: 0.0.4
       language: wasm/assemblyscript
       file: ./src/mappings.ts
       entities:
         - Delegate
         - TokenHolder
       abis:
-        - name: CompoundToken
-          file: ./abis/CompoundToken.json
+        - name: UniswapToken
+          file: ./abis/UniswapToken.json
       eventHandlers:
         - event: DelegateChanged(indexed address,indexed address,indexed address)
           handler: handleDelegateChanged

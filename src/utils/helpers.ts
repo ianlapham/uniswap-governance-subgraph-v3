@@ -3,22 +3,14 @@ import {
   Delegate,
   Proposal,
   Governance,
-  Vote
+  Vote,
 } from "../../generated/schema";
-import {
-  Address,
-  EthereumEvent,
-  BigInt,
-  Bytes,
-  log
-} from "@graphprotocol/graph-ts";
-import { DEFAULT_DECIMALS, toDecimal } from "./decimals";
+import { Address, BigInt, log } from "@graphprotocol/graph-ts";
 import {
   ZERO_ADDRESS,
   BIGINT_ZERO,
   BIGINT_ONE,
-  BIGINT_FIVE,
-  BIGDECIMAL_ZERO
+  BIGDECIMAL_ZERO,
 } from "./constants";
 
 export function getOrCreateTokenHolder(
@@ -92,6 +84,35 @@ export function getOrCreateVote(
   }
 
   return vote as Vote;
+}
+
+export function getProposalId(
+  block: BigInt,
+  contract: Address | null,
+  baseId: string,
+  txHash: string
+): string {
+  if (
+    contract == Address.fromString("0x5e4be8Bc9637f0EAA1A755019e06A68ce081D58F")
+  ) {
+    if (block > BigInt.fromI32(12686655)) {
+      log.error("Old governance used after transition. tx_hash: {}", [txHash]);
+      return null;
+    } else {
+      return "0." + baseId;
+    }
+  } else if (
+    contract == Address.fromString("0xC4e172459f1E7939D522503B81AFAaC1014CE6F6")
+  ) {
+    return "1." + baseId;
+  } else if (
+    contract == Address.fromString("0x408ED6354d4973f66138C91495F2f2FCbd8724C3")
+  ) {
+    return "2." + baseId;
+  } else {
+    log.error("Fatal error, get proposal id fault. Tx hash: {}", [txHash]);
+    return null;
+  }
 }
 
 export function getOrCreateProposal(
