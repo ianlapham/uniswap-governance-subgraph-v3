@@ -1,6 +1,11 @@
 ## Uniswap Governance Subgraph v3 (Both alpha governances)
 
-This Subgraph provides a proposal id schema as follows: Alpha v1 proposals have a "0." prefix (ex: proposal 4 is 0.4) and Alpha v2 proposals have a "1." prefix (ex: the first proposal on alpha v2 is 1.1). While this naming schema is more complex than a linear version (which I used for [Uniswap Governance Subgraph v2](https://thegraph.com/explorer/subgraph/arr00/uniswap-governance-v2)), it uses the actual proposal id as part of the id which will corrolate to the transactions that users are signing to vote. This will hopefully minimize confusion.
+This subgraph tracks Governance data on Uniswap governance contracts. It is aware of both versions of GovernorAlpha and also GovernorBravo.
+
+This Subgraph provides a proposal id schema as follows: Alpha v1 proposals have a "0." prefix (ex: proposal 4 is 0.4) and Alpha v2 proposals have a "1." prefix (ex: the first proposal on alpha v2 is 1.1).
+Bravo proposals have a "2." prefix).
+
+While this naming schema is more complex than a linear version (which is used for [Uniswap Governance Subgraph v2](https://thegraph.com/explorer/subgraph/arr00/uniswap-governance-v2)), it uses the actual proposal id as part of the id which will corrolate to the transactions that users are signing to vote. This will hopefully minimize confusion.
 
 This subgraph indexes and exposes in GraphQL all the event data related to the GovernorAlpha v1 and v2 and Uniswap token contracts from Uniswap, providing an easy access to Token holder and Delegates information, Proposals and votes casted, and all the relationships between those entities.
 
