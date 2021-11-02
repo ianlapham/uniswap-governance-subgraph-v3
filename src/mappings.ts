@@ -6,12 +6,11 @@ import {
   ProposalExecuted,
   VoteCast,
 } from "../generated/GovernorBravo/GovernorBravo";
-import { VoteCast as VoteCastAlpha } from "../generated/GovernorAlpha/GovernorAlpha";
 import {
   DelegateChanged,
   DelegateVotesChanged,
   Transfer,
-} from "../generated/UniswapToken/UniswapToken";
+} from "../generated/EnsToken/EnsToken";
 import {
   getOrCreateTokenHolder,
   getOrCreateDelegate,
@@ -39,7 +38,7 @@ export function handleProposalCreated(event: ProposalCreated): void {
   let proposalId = getProposalId(
     event.block.number,
     event.address,
-    event.params.id.toString(),
+    event.params.proposalId.toString(),
     event.transaction.hash.toHexString()
   );
   if (proposalId == null) return;
@@ -85,7 +84,7 @@ export function handleProposalCanceled(event: ProposalCanceled): void {
   let proposalId = getProposalId(
     event.block.number,
     event.address,
-    event.params.id.toString(),
+    event.params.proposalId.toString(),
     event.transaction.hash.toHexString()
   );
   if (proposalId == null) return;
@@ -107,7 +106,7 @@ export function handleProposalQueued(event: ProposalQueued): void {
   let proposalId = getProposalId(
     event.block.number,
     event.address,
-    event.params.id.toString(),
+    event.params.proposalId.toString(),
     event.transaction.hash.toHexString()
   );
   if (proposalId == null) return;
@@ -130,7 +129,7 @@ export function handleProposalExecuted(event: ProposalExecuted): void {
   let proposalId = getProposalId(
     event.block.number,
     event.address,
-    event.params.id.toString(),
+    event.params.proposalId.toString(),
     event.transaction.hash.toHexString()
   );
   if (proposalId == null) return;
@@ -181,57 +180,11 @@ export function handleVoteCast(event: VoteCast): void {
 
   vote.proposal = proposal.id;
   vote.voter = voter.id;
-  vote.votesRaw = event.params.votes;
-  vote.votes = toDecimal(event.params.votes);
+  vote.votesRaw = event.params.weight;
+  vote.votes = toDecimal(event.params.weight);
 
   // key difference between alpha and bravo
   vote.support = event.params.support === 1;
-
-  vote.save();
-
-  if (proposal.status == STATUS_PENDING) {
-    proposal.status = STATUS_ACTIVE;
-    proposal.save();
-  }
-}
-
-// - MARK: Governor Alpha specific events
-// - event: VoteCast(address,uint256,bool,uint256)
-//   handler: handleVoteCastAlpha
-
-export function handleVoteCastAlpha(event: VoteCastAlpha): void {
-  let proposalId = getProposalId(
-    event.block.number,
-    event.address,
-    event.params.proposalId.toString(),
-    event.transaction.hash.toHexString()
-  );
-  if (proposalId == null) return;
-  let proposal = getOrCreateProposal(proposalId);
-  let voteId = event.params.voter
-    .toHexString()
-    .concat("-")
-    .concat(proposalId);
-  let vote = getOrCreateVote(voteId);
-  let voter = getOrCreateDelegate(event.params.voter.toHexString(), false);
-
-  // checking if the voter was a delegate already accounted for, if not we should log an error
-  // since it shouldn't be possible for a delegate to vote without first being "created"
-  if (voter == null) {
-    log.error("Delegate {} not found on VoteCast. tx_hash: {}", [
-      event.params.voter.toHexString(),
-      event.transaction.hash.toHexString(),
-    ]);
-  }
-
-  // Creating it anyway since we will want to account for this event data, even though it should've never happened
-  voter = getOrCreateDelegate(event.params.voter.toHexString());
-
-  vote.proposal = proposal.id;
-  vote.voter = voter.id;
-  vote.votesRaw = event.params.votes;
-  vote.votes = toDecimal(event.params.votes);
-  vote.support = event.params.support;
 
   vote.save();
 
