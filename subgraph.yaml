@@ -11,7 +11,7 @@ dataSources:
     name: GovernorBravo
     network: mainnet
     source:
-      address: "0x408ED6354d4973f66138C91495F2f2FCbd8724C3"
+      address: "0x323A76393544d5ecca80cd6ef2A560C6a395b7E3"
       abi: GovernorBravo
       startBlock: 13533418 
     mapping:
@@ -43,7 +43,7 @@ dataSources:
     name: EnsToken
     network: mainnet
     source:
-      address: "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"
+      address: "0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72"
       abi: EnsToken
       startBlock: 13533418 
     mapping:
